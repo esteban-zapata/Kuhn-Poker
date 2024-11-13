@@ -1,3 +1,5 @@
+## ML Project 
+## Esteban Zapata & Raxel Ortiz
 import numpy as np
 
 class KuhnTrainer:

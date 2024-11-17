@@ -2,16 +2,18 @@
 ## Esteban Zapata & Raxel Ortiz
 import numpy as np
 from node import Node  # Import the Node class from node.py
+from model import create_model  # Import the create_model function from model.py
 
 class KuhnTrainer:
     def __init__(self):
         self.cards = [1, 2, 3]
         self.num_actions = 2  # Two actions: pass (p) and bet (b)
         self.node_map = {}
+        self.model = create_model((2,))  # Create a neural network model
 
     def get_node(self, history):
         if history not in self.node_map:
-            self.node_map[history] = Node(history)
+            self.node_map[history] = Node(history, self.model)
         return self.node_map[history]
 
     def cfr(self, history, p0, p1):
@@ -47,12 +49,12 @@ class KuhnTrainer:
                 util[a] = -self.cfr(next_history, p0, p1 * strategy[a])
             node_util += strategy[a] * util[a]
 
-        for a in range(self.num_actions):
-            regret = util[a] - node_util
-            if player == 0:
-                node.regret_sum[a] += p1 * regret
-            else:
-                node.regret_sum[a] += p0 * regret
+        # for a in range(self.num_actions):
+        #     regret = util[a] - node_util
+        #     if player == 0:
+        #         node.regret_sum[a] += p1 * regret
+        #     else:
+        #         node.regret_sum[a] += p0 * regret
 
         return node_util
 

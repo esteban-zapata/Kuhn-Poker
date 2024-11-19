@@ -1,15 +1,31 @@
 ## ML Project
 ## Esteban Zapata & Raxel Ortiz
+import os
 import numpy as np
-from node import Node  # Import the Node class from node.py
+import tensorflow as tf
+from nodes import Node  # Import the Node class from node.py
 from model import create_model  # Import the create_model function from model.py
+from tensorflow.keras import layers, models
 
 class KuhnTrainer:
-    def __init__(self):
+    def __init__(self, model_path='kuhn_poker_model_10000.h5'):
         self.cards = [1, 2, 3]
         self.num_actions = 2  # Two actions: pass (p) and bet (b)
         self.node_map = {}
-        self.model = create_model((2,))  # Create a neural network model
+        self.model_path = model_path
+        self.model = self.load_or_create_model((2,))  # Create a neural network model
+
+    def load_or_create_model(self, input_shape):
+        if os.path.exists(self.model_path):
+            print("Loading model...")
+            return tf.keras.models.load_model(self.model_path)
+        else:
+            print("creating new model...")
+            return create_model(input_shape)
+
+    def save_model(self):
+        self.model.save(self.model_path)
+        print(f"Model saved to {self.model_path}")
 
     def get_node(self, history):
         if history not in self.node_map:
@@ -64,6 +80,7 @@ class KuhnTrainer:
             np.random.shuffle(self.cards)
             util += self.cfr("", 1, 1)
         print(f"Average game value: {util / iterations}")
+        self.save_model()
 
     def get_final_strategy(self):
         return {k: node.get_average_strategy() for k, node in self.node_map.items()}

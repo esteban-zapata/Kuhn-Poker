@@ -6,8 +6,8 @@ def create_model(input_shape):
     model = models.Sequential()
     model.add(layers.Dense(64, activation='relu', input_shape=input_shape))
     model.add(layers.Dense(64, activation='relu'))
-    model.add(layers.Dense(2, activation='softmax')) #two actions pass (p) and bet (b)
-    model.compile(optimizer='adam', loss='mse')
+    model.add(layers.Dense(1, activation='sigmoid')) #two actions pass (p) and bet (b)
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     return model
 
 def encode_history(history, max_lenght=2):

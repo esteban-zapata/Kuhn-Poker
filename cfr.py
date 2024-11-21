@@ -1,94 +1,126 @@
-## ML Project
-## Esteban Zapata & Raxel Ortiz
+# ML Project
+# Esteban Zapata & Raxel Ortiz
 import os
 import numpy as np
 import tensorflow as tf
 from nodes import Node  # Import the Node class from node.py
 from model import create_model  # Import the create_model function from model.py
 from tensorflow.keras import layers, models
+import random
 
 class KuhnTrainer:
-    def __init__(self, model_path='kuhn_poker_model_10000.h5'):
-        self.cards = [1, 2, 3]
-        self.num_actions = 2  # Two actions: pass (p) and bet (b)
-        self.node_map = {}
+    def __init__(self, model_path):
         self.model_path = model_path
-        self.model = self.load_or_create_model((2,))  # Create a neural network model
-
-    def load_or_create_model(self, input_shape):
+        input_shape = (2,)  # Example input shape with 2 features (player1_card, player2_card)
         if os.path.exists(self.model_path):
             print("Loading model...")
-            return tf.keras.models.load_model(self.model_path)
+            self.model = tf.keras.models.load_model(self.model_path)
         else:
-            print("creating new model...")
-            return create_model(input_shape)
+            print("Creating new model...")
+            self.model = create_model(input_shape)
 
-    def save_model(self):
+    def train(self, iterations=1000):
+        # Example training logic
+        print("Training the model...")
+        game_history = []
+        for _ in range(iterations):
+            game_history.append(self.play_game())
+        self.train_on_history(game_history)
         self.model.save(self.model_path)
-        print(f"Model saved to {self.model_path}")
 
-    def get_node(self, history):
-        if history not in self.node_map:
-            self.node_map[history] = Node(history, self.model)
-        return self.node_map[history]
+    def play_game(self, use_model=False):
+        # Example game simulation logic
+        print("Playing a game of Kuhn Poker...")
 
-    def cfr(self, history, p0, p1):
-        plays = len(history)
-        player = plays % 2
-        opponent = 1 - player
+        # Initialize deck and shuffle
+        deck = [0, 1, 2]
+        random.shuffle(deck)
 
-        # Check for terminal states
-        if plays > 1:
-            terminal_pass = history[-1] == 'p'
-            double_bet = history[-2:] == 'bb'
-            is_player_card_higher = self.cards[player] > self.cards[opponent]
-            if terminal_pass:
-                if history == "pp":
-                    return 1 if is_player_card_higher else -1
-                else:
-                    return 1
-            elif double_bet:
-                return 2 if is_player_card_higher else -2
+        # Deal one card to each player
+        player1_card = deck.pop()
+        player2_card = deck.pop()
 
-        # Get the node for the current history
-        node = self.get_node(history)
-        strategy = node.get_strategy(p0 if player == 0 else p1)
-        util = np.zeros(self.num_actions)
-        node_util = 0
+        # Initialize game state
+        game_state = {
+            'player1_card': player1_card,
+            'player2_card': player2_card,
+            'player1_action': None,
+            'player2_action': None,
+            'pot': 0
+        }
 
-        # Update cumulative regrets
-        for a in range(self.num_actions):
-            next_history = history + ('p' if a == 0 else 'b')
-            if player == 0:
-                util[a] = -self.cfr(next_history, p0 * strategy[a], p1)
-            else:
-                util[a] = -self.cfr(next_history, p0, p1 * strategy[a])
-            node_util += strategy[a] * util[a]
+        # Player 1's turn
+        game_state['player1_action'] = self.get_action(player1_card, player2_card, use_model)
+        if game_state['player1_action'] == 1:  # Player 1 bets
+            game_state['pot'] += 1
 
-        # for a in range(self.num_actions):
-        #     regret = util[a] - node_util
-        #     if player == 0:
-        #         node.regret_sum[a] += p1 * regret
-        #     else:
-        #         node.regret_sum[a] += p0 * regret
+        # Player 2's turn
+        game_state['player2_action'] = self.get_action(player2_card, player1_card, use_model)
+        if game_state['player2_action'] == 1:  # Player 2 bets
+            game_state['pot'] += 1
 
-        return node_util
+        # Determine winner
+        winner = self.determine_winner(game_state)
+        game_state['winner'] = winner
 
-    def train(self, iterations):
-        util = 0
-        for i in range(iterations):
-            np.random.shuffle(self.cards)
-            util += self.cfr("", 1, 1)
-        print(f"Average game value: {util / iterations}")
-        self.save_model()
+        # Display game state
+        self.display_game_state(game_state)
 
-    def get_final_strategy(self):
-        return {k: node.get_average_strategy() for k, node in self.node_map.items()}
+        return game_state
+
+    def get_action(self, player_card, opponent_card, use_model):
+        if use_model:
+            # Use the trained model to predict the action
+            features = np.array([[player_card, opponent_card]])
+            prediction = self.model.predict(features)
+            return 1 if prediction[0] > 0.5 else 0
+        else:
+            # Use a random action
+            return random.choice([0, 1])
+
+    def determine_winner(self, game_state):
+        # Determine the winner based on the game state
+        if game_state['player1_action'] == 0 and game_state['player2_action'] == 0:
+            # Both players passed, highest card wins
+            return 0 if game_state['player1_card'] > game_state['player2_card'] else 1
+        elif game_state['player1_action'] == 1 and game_state['player2_action'] == 0:
+            # Player 1 bet, Player 2 passed, Player 1 wins
+            return 0
+        elif game_state['player1_action'] == 0 and game_state['player2_action'] == 1:
+            # Player 1 passed, Player 2 bet, Player 2 wins
+            return 1
+        else:
+            # Both players bet, highest card wins
+            return 0 if game_state['player1_card'] > game_state['player2_card'] else 1
+
+    def train_on_history(self, game_history):
+        # Convert game history to training data
+        X = []
+        y = []
+        for game in game_history:
+            # Example: Use player1_card and player2_card as features
+            features = [game['player1_card'], game['player2_card']]
+            # Example: Use winner as label
+            label = game['winner']
+            X.append(features)
+            y.append(label)
+
+        X = np.array(X)
+        y = np.array(y)
+
+        # Train the model
+        self.model.fit(X, y, epochs=1000)
+
+    def display_game_state(self, game_state):
+        print(f"Player 1 card: {game_state['player1_card']}, Player 2 card: {game_state['player2_card']}")
+        print(f"Player 1 action: {'bet' if game_state['player1_action'] == 1 else 'pass'}, Player 2 action: {'bet' if game_state['player2_action'] == 1 else 'pass'}")
+        print(f"Pot: {game_state['pot']}")
+        print(f"Winner: Player {game_state['winner'] + 1}")
+
+def main():
+    trainer = KuhnTrainer("path_to_your_model.h5")
+    trainer.train(iterations=1000)
+    trainer.play_game(use_model=True)
 
 if __name__ == "__main__":
-    trainer = KuhnTrainer()
-    trainer.train(10000)
-    final_strategy = trainer.get_final_strategy()
-    print("Final Strategy:")
-    for history, strategy in final_strategy.items():
-        print(f"History: {history}, Strategy: {strategy}")
+    main()

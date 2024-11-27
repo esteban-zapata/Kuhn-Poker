@@ -1,5 +1,5 @@
 import random
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 Pass = 0
 Bet = 1

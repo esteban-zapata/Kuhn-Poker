@@ -84,11 +84,98 @@ def trainPrune(iterations: int, savePath):
         pickle.dump(nodeMap, f)
 
 
-def cfr():
-    pass
+def cfr(cards: List[int], history: str, p0: float, p1: float) -> float:
+    plays = len(history)
+    curr_player = plays % 2
 
-def cfrPrune():
-    pass
+    infoSet = str(cards[curr_player]) + history
+
+    curr_node = Node()
+    curr_node.infoSet = infoSet
+    payoff = curr_node.returnPayoff(cards)
+    terminalNode = payoff is not None
+
+    # Return payoff for terminal states
+    if terminalNode:
+        return payoff
+
+    # Get information set node or create if nonexistent
+    curr_node = nodeMap.get(infoSet)
+    if curr_node is None:
+        curr_node = Node()
+        curr_node.infoSet = infoSet
+        nodeMap[infoSet] = curr_node
+
+    # For each action, recursively call cfr with additional history and probability
+    realization_weight = p1 if curr_player == 0 else p0
+    strategy = curr_node.getStrategy(realization_weight)
+    util = [0] * NUM_ACTIONS
+
+    # nodeUtil is the weighted average of the cfr of each branch,
+    # weighted by the probability of traversing down a branch
+    nodeUtil = 0
+    for a in range(NUM_ACTIONS):
+        nextHistory = history + ('p' if a == 0 else 'b')
+        # The first probability is player 1's counterfactual probability
+        if curr_player == 0:
+            util[a] = -cfr(cards, nextHistory, p0 * strategy[a], p1)
+        # Current player is 1
+        else:
+            util[a] = -cfr(cards, nextHistory, p0, p1 * strategy[a])
+        nodeUtil += strategy[a] * util[a]
+
+    # compute and accumulate cfr for each action
+    for a in range(NUM_ACTIONS):
+        regret = util[a] - nodeUtil
+        curr_node.regretSum[a] += (p1 if curr_player == 0 else p0) * regret
+    return nodeUtil 
+    
+
+def cfrPrune(cards: List[int], history: str, p0: float, p1: float) -> float:
+    plays = len(history)
+    curr_player = plays % 2
+
+    infoSet = str(cards[curr_player]) + history
+
+    curr_node = Node()
+    curr_node.infoSet = infoSet
+    payoff = curr_node.returnPayoff(cards)
+    terminalNode = payoff is not None
+
+    # Return payoff for terminal states
+    if terminalNode:
+        return payoff
+
+    # Get information set node or create it if nonexistent
+    curr_node = nodeMap.get(infoSet)
+    if curr_node is None:
+        curr_node = Node()
+        curr_node.infoSet = infoSet
+        nodeMap[infoSet] = curr_node
+
+    # For each action, recursively call cfr with additional history and probability
+    realization_weight = p1 if curr_player == 0 else p0
+    strategy = curr_node.getStrategy(realization_weight)
+    util = [0] * NUM_ACTIONS
+
+    # nodeUtil is the weighted average of the cfr of each branch,
+    # weighted by the probability of traversing down a branch
+    nodeUtil = 0
+    for a in curr_node.promising_branches:
+        nextHistory = history + ('p' if a == 0 else 'b')
+        # The first probability is player 1's counterfactual probability
+        if curr_player == 0:
+            util[a] = -cfr(cards, nextHistory, p0 * strategy[a], p1)
+        # Current player is 1
+        else:
+            util[a] = -cfr(cards, nextHistory, p0, p1 * strategy[a])
+        nodeUtil += strategy[a] * util[a]
+
+    # compute and accumulate cfr for each action
+    for a in curr_node.promising_branches:
+        regret = util[a] - nodeUtil
+        curr_node.regretSum[a] += (p1 if curr_player == 0 else p0) * regret
+    return nodeUtil
 
 
 

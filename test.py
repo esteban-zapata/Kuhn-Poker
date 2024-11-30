@@ -74,8 +74,8 @@ class Test():
         gt = self.bestResponse()
         output = [0, 0]
         for b in range(1, 4):
-            output[0] += gt[str(b)]['ev'] /3
-            output[1] -= gt[str(b)]['br'] /3
+            output[0] += gt[str(b)]['ev'] / 3
+            output[1] -= gt[str(b)]['br'] / 3
         return output
 
 

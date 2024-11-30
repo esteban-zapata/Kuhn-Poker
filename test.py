@@ -44,7 +44,7 @@ class Test():
         else:
             return -self.test_play(testNodeMap, history + 'b')
 
-    def gameVal(self):
+    def gameValue(self):
         value = 0
         cardList = [[1, 2], [1, 3], [2, 1], [2, 3], [3, 1], [3, 2]]
 
@@ -54,17 +54,18 @@ class Test():
                 node.children = infoSet
                 return node.returnPayoff(cards)
             else:
-                currentPlayer = len(infoSet) % 2
+                currentPlayer = (len(infoSet) - 1) % 2
                 other = 1 - currentPlayer
-                otherInfo = str(card[other] + infoSet[1:])
+                otherInfo = str(cards[other]) + infoSet[1:]
                 strategy = self.nodeMap[infoSet].getAvgStrat()
                 value = 0
                 for a in range(2):
                     if a == 0:
-                        value += strategy[a] * -valRecursive(self, infoSet + 'p')
+                        value += -valRecursive(self, otherInfo + 'p') * strategy[a]
                     else:
-                        value += strategy[a] * -valRecursive(self, infoSet + 'b')
+                        value += -valRecursive(self, otherInfo + 'b') * strategy[a]
                 return value
+
         for cards in cardList:
             value += valRecursive(self, str(cards[0])) / 6
         return value
@@ -74,7 +75,7 @@ class Test():
         output = [0, 0]
         for b in range(1, 4):
             output[0] += gt[str(b)]['ev'] /3
-            output[1] -= gt[str(b)]['ev'] /3
+            output[1] -= gt[str(b)]['br'] /3
         return output
 
 
@@ -104,7 +105,7 @@ class Test():
                             evNextNode = Node()
                             evNextNode.children = card + history + n
                             evCurrentNode = self.nodeMap[other + history]
-                            evTemp = reachProb[evRP] * evCurrentNode.getAvgStrat()[a] * (-evNextNode.returnPayoff(evCards))
+                            evTemp += reachProb[evRP] * evCurrentNode.getAvgStrat()[a] * (-evNextNode.returnPayoff(evCards))
                             npEV += reachProb[evRP]
                             brNextNode = Node()
                             brNextNode.children = other + history + n
@@ -157,11 +158,11 @@ class Test():
         for node in self.nodeMap:
             self.nodeMap[node].promisingBranch = list(range(2))
             for i in range(2):
-                if self.nodeMap[node].getAvgStrat()[i] < threshold:
+                if self.nodeMap[node].regretSum[i] < threshold:
                     self.nodeMap[node].promisingBranch.remove(i)
 
 
-def isTerminal(hisstory: str) -> bool:
+def isTerminal(history: str) -> bool:
     return history == 'pp' or history == 'pbp' or history == 'pbb' or history == 'bp' or history == 'bb'
 
 

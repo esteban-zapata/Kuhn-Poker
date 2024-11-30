@@ -16,12 +16,12 @@ class KuhnPoker():
         random.shuffle(cards)
         print("you have: $" + str(bank))
         print("Your card is: " + str(cards[0]) if first else str(cards[1]))
-        self.playAI(first, bank + self.Recursive(cards, '', first))
+        self.playAI(first, bank + self.recursive(cards, '', first))
 
-    def Recursive(self, cards, history: str, first: bool):
+    def recursive(self, cards, history: str, first: bool):
         players = ["User", "AI"]
         plays = len(history)
-        AI_Turn = (plays % 2 == 1) if first else (plays % 2 == 0)
+        AI_Turn = (plays % 2 == 1) if first else plays % 2 == 0
         current_player = plays % 2
         opponent = 1 - current_player
         AI_cards = str(cards[1]) if first else str(cards[0])
@@ -58,23 +58,24 @@ class KuhnPoker():
             rand = random.random()
             # if AI decideds to passes
             if rand < AI_Strat[0]:
-                return self.Recursive(cards, history + 'p', first)
+                print("AI passed.\n")
+                return self.recursive(cards, history + 'p', first)
             else:
                 print("AI bets $1.\n")
-                return self.Recursive(cards, history + 'b', first)
+                return self.recursive(cards, history + 'b', first)
         else:
             userInput = input("Do you want to bet or pass? (b/p): ")
             if userInput == 'p':
                 print("You passed.\n")
-                return self.Recursive(cards, history + 'p', first)
+                return self.recursive(cards, history + 'p', first)
             elif userInput == 'b':
                 print("You bet $1.\n")
-                return self.Recursive(cards, history + 'b', first)
+                return self.recursive(cards, history + 'b', first)
             else:
-                return self.Recursive(cards, history, first)
+                return self.recursive(cards, history, first)
 
 
 if __name__ == '__main__':
     game = KuhnPoker()
-    game.read('our_model')
+    game.read('kt-200Mp')
     game.playAI(False, 0)

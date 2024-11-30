@@ -2,6 +2,8 @@ import random, pickle, time
 from typing import *
 from nodes import Node
 from test import Test
+# import sys
+# sys.setrecursionlimit(500000)
 
 NUM_ACTIONS = 2
 
@@ -20,7 +22,7 @@ def continueTrainPrune(file, iterations: int, saveName):
     kuhntest.read(file)
     global nodeMap
     nodeMap = kuhntest.nodeMap
-    train(iterations, saveName)
+    trainPrune(iterations, saveName)
 
 
 def train(iterations: int, saveName):
@@ -33,7 +35,7 @@ def train(iterations: int, saveName):
         random.shuffle(cards)
         util += cfr(cards, '', 1, 1)
 
-        freq_print = 10000
+        freq_print = 100000
         if i % (freq_print) == 0:
             if time.time() - t1 != 0.:
                 print(f"Kuhn trained {i} iterations. {str(freq_print / (time.time() - t1))} iterations per second")
@@ -43,16 +45,16 @@ def train(iterations: int, saveName):
             print(f"Worst case game value: {my.exploitability()}")
             print(f"Total exploitability: {-sum(my.exploitability())}")
             t1 = time.time()
-        
-        my = Test()
-        my.nodeMap = nodeMap
-        print("Strategy: ")
-        for node in nodeMap.values():
-            print(node)
-        print("Aaverage game valuse: " + str(my.gameValue())) ##!!! Edit test.py to include gamevalue func.
-        
-        with open(saveName, 'wb') as f:
-            pickle.dump(nodeMap, f)
+
+    my = Test()
+    my.nodeMap = nodeMap
+    print("Strategy: ")
+    for node in nodeMap.values():
+        print(node)
+    print("Aaverage game valuse: " + str(my.gameValue())) ##!!! Edit test.py to include gamevalue func.
+
+    with open(saveName, 'wb') as f:
+        pickle.dump(nodeMap, f)
 
 
 
@@ -63,7 +65,7 @@ def trainPrune(iterations: int, savePath):
     for i in range(1, iterations):
         random.shuffle(cards)
         util += cfrPrune(cards, '', 1, 1)
-        
+
         # Progress
         if i % (10 ** 5) == 0:
             my = Test()
@@ -128,8 +130,8 @@ def cfr(cards: List[int], history: str, p0: float, p1: float) -> float:
     for a in range(NUM_ACTIONS):
         regret = util[a] - nodeUtil
         curr_node.regretSum[a] += (p1 if curr_player == 0 else p0) * regret
-    return nodeUtil 
-    
+    return nodeUtil
+
 
 def cfrPrune(cards: List[int], history: str, p0: float, p1: float) -> float:
     plays = len(history)

@@ -1,6 +1,6 @@
 import random, pickle, time
 from typing import *
-from nodes import Node
+from nodes import kNode
 from test import Test
 # import sys
 # sys.setrecursionlimit(500000)
@@ -92,8 +92,8 @@ def cfr(cards: List[int], history: str, p0: float, p1: float) -> float:
 
     infoSet = str(cards[curr_player]) + history
 
-    curr_node = Node()
-    curr_node.infoSet = infoSet
+    curr_node = kNode()
+    curr_node.children = infoSet
     payoff = curr_node.returnPayoff(cards)
     terminalNode = payoff is not None
 
@@ -104,8 +104,8 @@ def cfr(cards: List[int], history: str, p0: float, p1: float) -> float:
     # Get information set node or create if nonexistent
     curr_node = nodeMap.get(infoSet)
     if curr_node is None:
-        curr_node = Node()
-        curr_node.infoSet = infoSet
+        curr_node = kNode()
+        curr_node.children = infoSet
         nodeMap[infoSet] = curr_node
 
     # For each action, recursively call cfr with additional history and probability
@@ -139,8 +139,8 @@ def cfrPrune(cards: List[int], history: str, p0: float, p1: float) -> float:
 
     infoSet = str(cards[curr_player]) + history
 
-    curr_node = Node()
-    curr_node.infoSet = infoSet
+    curr_node = kNode()
+    curr_node.children = infoSet
     payoff = curr_node.returnPayoff(cards)
     terminalNode = payoff is not None
 
@@ -151,8 +151,8 @@ def cfrPrune(cards: List[int], history: str, p0: float, p1: float) -> float:
     # Get information set node or create it if nonexistent
     curr_node = nodeMap.get(infoSet)
     if curr_node is None:
-        curr_node = Node()
-        curr_node.infoSet = infoSet
+        curr_node = kNode()
+        curr_node.children = infoSet
         nodeMap[infoSet] = curr_node
 
     # For each action, recursively call cfr with additional history and probability

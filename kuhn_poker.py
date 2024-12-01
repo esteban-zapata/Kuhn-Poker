@@ -1,7 +1,7 @@
 from typing import Dict
 import pickle
 import random
-from nodes import Node
+from nodes import kNode
 
 
 class KuhnPoker():

@@ -7,7 +7,7 @@ NUM_ACTIONS = 2
 rand = random.random()
 
 
-class Node():
+class kNode():
     def __init__(self):
         self.children = ''
         self.strategy = [0] * NUM_ACTIONS
@@ -34,7 +34,7 @@ class Node():
         return self.strategy
 
     def getAvgStrat(self) -> list:
-        avgStrat = [0.0] * NUM_ACTIONS
+        avgStrat = [0] * NUM_ACTIONS
         normalizeSum = sum(self.strategySum)
         for a in range(NUM_ACTIONS):
             if normalizeSum > 0:
@@ -57,7 +57,7 @@ class Node():
 
         if plays > 1:
             terminalPass = history[plays - 1] == 'p'
-            doubleBet = history[plays - 2] == 'bb'
+            doubleBet = history[plays - 2: plays] == 'bb'
             isPlayerCardHigher = cards[currentPlayer] > cards[opp]
             if terminalPass:
                 if history == 'pp':

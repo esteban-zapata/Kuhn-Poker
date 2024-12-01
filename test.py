@@ -1,6 +1,6 @@
 import pickle
 import random
-from nodes import Node
+from nodes import kNode
 
 
 class Test():
@@ -50,7 +50,7 @@ class Test():
 
         def valRecursive(self, infoSet: str) -> float:
             if infoSet not in self.nodeMap:
-                node = Node()
+                node = kNode()
                 node.children = infoSet
                 return node.returnPayoff(cards)
             else:
@@ -102,12 +102,12 @@ class Test():
                             brCards = [int(card), int(other)] if currentPlayer == 0 else [int(other), int(card)]
                             evRP = other + str(currentPlayer)
                             brRP = other + str(otherPlayer)
-                            evNextNode = Node()
+                            evNextNode = kNode()
                             evNextNode.children = card + history + n
                             evCurrentNode = self.nodeMap[other + history]
                             evTemp += reachProb[evRP] * evCurrentNode.getAvgStrat()[a] * (-evNextNode.returnPayoff(evCards))
                             npEV += reachProb[evRP]
-                            brNextNode = Node()
+                            brNextNode = kNode()
                             brNextNode.children = other + history + n
                             brTemp += reachProb[brRP] * (-brNextNode.returnPayoff(brCards))
                             npBR += reachProb[brRP]
@@ -143,9 +143,8 @@ class Test():
                             currentNode = self.nodeMap[other + history]
                             evRP = other + str(currentPlayer)
                             npEV += reachProb[evRP]
-                            evTemp += reachProb[evRP] * currentNode.getAvgStrat()[a] * -gameTree[other + history + n]['ev']
-                        if npEV != 0:
-                            evTemp /= npEV
+                            evTemp += reachProb[evRP] * currentNode.getAvgStrat()[a] * -gameTree[card + history + n]['br']
+                        if npEV != 0: evTemp /= npEV
                         gameTree[card + history]['ev'] += evTemp
             return gameTree
         rp = {}
@@ -155,11 +154,11 @@ class Test():
         return traverseing(self, '', rp, treeBuilder())
 
     def prune(self, threshold: str):
-        for node in self.nodeMap:
-            self.nodeMap[node].promisingBranch = list(range(2))
+        for item in self.nodeMap:
+            self.nodeMap[item].promisingBranch = list(range(2))
             for i in range(2):
-                if self.nodeMap[node].regretSum[i] < threshold:
-                    self.nodeMap[node].promisingBranch.remove(i)
+                if self.nodeMap[item].regretSum[i] < threshold:
+                    self.nodeMap[item].promisingBranch.remove(i)
 
 
 def isTerminal(history: str) -> bool:
@@ -181,12 +180,12 @@ def buildAvgStrat():
     for card in range(1, 4):
         history = str(card)
         infoSet = history
-        currentNode = Node()
+        currentNode = kNode()
         currentNode.children = infoSet
         nodeMap[infoSet] = currentNode
         for strategy in ['', 'p', 'b', 'pb']:
             infoSet = history + strategy
-            currentNode = Node()
+            currentNode = kNode()
             currentNode.children = infoSet
             nodeMap[infoSet] = currentNode
     return nodeMap
@@ -197,6 +196,6 @@ if __name__ == '__main__':
     nodeMap = buildAvgStrat()
     game.nodeMap = nodeMap
     exp = game.bestResponse()
-    print(game.gameVal())
+    print(game.gameValue())
     print(game.exploitability())
     print(game.bestResponse())

@@ -1,26 +1,74 @@
-import numpy as np
-from model import create_model, encode_history
+import random
+from typing import List, Optional
 
-class Node:
-    def __init__(self, info_set, model):
-        self.info_set = info_set # Information set for node
-        self.model = model
-        self.strategy_sum = np.zeros(2) #sum of all strat so far
+PASS = 0
+BET = 1
+NUM_ACTIONS = 2
+rand = random.random()
 
-    def get_strategy(self, realization_weight):
-        """ calculate the current mixed strat with regret matching """
-        info_arr = encode_history(self.info_set).reshape(1, -1)
-        strategy = self.model.predict(info_arr)[0]
-        self.strategy_sum += realization_weight * strategy
-        return strategy
 
-    def get_average_strategy(self):
-        """ get average strat across all iterations """
-        normalizing_sum = np.sum(self.strategy_sum)
-        if normalizing_sum > 0:
-            return self.strategy_sum / normalizing_sum
-        else:
-            return np.ones(2) / 2 #uniform random strat
+class kNode():
+    def __init__(self):
+        self.children = ''
+        self.strategy = [0] * NUM_ACTIONS
+        self.regretSum = [0] * NUM_ACTIONS
+        self.strategySum = [0] * NUM_ACTIONS
 
     def __str__(self):
-        return f"InfoSet: {self.info_set}, AvgStrategy: {self.get_average_strategy()}"
+        return self.children + '' + ', '.join(str(x) for x in self.getAvgStrat())
+
+    def getStrategy(self, realization_weight: float) -> List[float]:
+        normalizeSum = 0
+        for a in range(NUM_ACTIONS):
+            if self.regretSum[a] > 0:
+                self.strategy[a] = self.regretSum[a]
+            else:
+                self.strategy[a] = 0
+            normalizeSum += self.strategy[a]
+        for a in range(NUM_ACTIONS):
+            if normalizeSum > 0:
+                self.strategy[a] /= normalizeSum
+            else:
+                self.strategy[a] = 1 / NUM_ACTIONS
+            self.strategySum[a] += realization_weight * self.strategy[a]
+        return self.strategy
+
+    def getAvgStrat(self) -> list:
+        avgStrat = [0] * NUM_ACTIONS
+        normalizeSum = sum(self.strategySum)
+        for a in range(NUM_ACTIONS):
+            if normalizeSum > 0:
+                avgStrat[a] = self.strategySum[a] / normalizeSum
+            else:
+                avgStrat[a] = 1.0 / NUM_ACTIONS
+        for a in range(NUM_ACTIONS):
+            if avgStrat[a] < 0.01:
+                avgStrat[a] = 0
+        normalizeSum = sum(avgStrat)
+        for a in range(NUM_ACTIONS):
+            avgStrat[a] /= normalizeSum
+        return avgStrat
+
+    def returnPayoff(self, cards: List[int]) -> Optional[int]:
+        history = self.children[1:len(self.children)]
+        plays = len(history)
+        currentPlayer = plays % 2
+        opp = 1 - currentPlayer
+
+        if plays > 1:
+            terminalPass = history[plays - 1] == 'p'
+            doubleBet = history[plays - 2: plays] == 'bb'
+            isPlayerCardHigher = cards[currentPlayer] > cards[opp]
+            if terminalPass:
+                if history == 'pp':
+                    if isPlayerCardHigher:
+                        return 1
+                    else:
+                        return -1
+                else:
+                    return 1
+            elif doubleBet:
+                if isPlayerCardHigher:
+                    return 2
+                else:
+                    return -2

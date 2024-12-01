@@ -1,37 +1,20 @@
-import random
-
-def play_game(human_card):
-    ai_card = random.choice([card for card in [1, 2, 3] if card != human_card])
-
-    # Human's turn
-    human_action = input("Your turn: pass: (p) or bet: (b): ")
-    while human_action not in ['p', 'b']:
-        human_action = input("Invalid input. Please enter 'p' or 'b': ")
-
-    # AI's turn
-    if human_action == 'p':
-        ai_action = 'p'
-    else: 
-        # AI's strategy (replace with model's strategy later)
-        ai_action = 'b'  # For now assume the AI ALWAYS BETS after the human bets
-
-        # TODO Feed info set to model
-
-        #TODO Choose action with highest prob
+import time
+from kuhn_poker import KuhnPoker
+from kuhn_train import train
+from test import Test
 
 
-    # Determine winner
-    if human_action == 'b' and ai_action == 'b':
-        if human_card > ai_card:
-            print("You win!")
-        else:
-            print("AI wins!")
-    else:
-        print("It's a tie.")
+# Train a game tree from scratch
+train(iterations=10 ** 8, saveName="kt-10M")
+# Continue training from a saved file
+# continueTrain('kt-10M', 90*10**6, 'kt-100M')
+kt = Test()
+kt.read(filepath="kt-10M")
+print(kt.gameValue())
 
-if __name__ == "__main__":
-    human_card = int(input("Enter your card (1, 2, or 3): "))
-    while human_card not in [1, 2, 3]:
-        human_card = int(input("Invalid input. Please enter 1, 2, or 3: "))
-
-    play_game(human_card)
+# Play against trained game tree
+game = KuhnPoker()
+game.read("kt-10M")
+game.playAI(first=False, bank=0)
+# game.read(filepath="kt-200Mp")
+# game.playAI(goFirst=False, bankroll=0)

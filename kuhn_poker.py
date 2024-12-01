@@ -77,5 +77,5 @@ class KuhnPoker():
 
 if __name__ == '__main__':
     game = KuhnPoker()
-    game.read('kt-200Mp')
+    game.read('kt-100M')
     game.playAI(False, 0)

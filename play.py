@@ -1,13 +1,13 @@
 import time
 from kuhn_poker import KuhnPoker
-from kuhn_train import train
+from kuhn_train import train, continueTrain
 from test import Test
 
 
 # Train a game tree from scratch
-train(iterations=10 ** 8, saveName="kt-10M")
+#train(iterations=10 ** 8, saveName="kt-10M")
 # Continue training from a saved file
-# continueTrain('kt-10M', 90*10**6, 'kt-100M')
+continueTrain('kt-10M', 90*10**6, 'kt-100M')
 kt = Test()
 kt.read(filepath="kt-10M")
 print(kt.gameValue())

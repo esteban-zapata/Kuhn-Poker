@@ -37,7 +37,7 @@ def train(iterations: int, saveName):
             batch_util += cfr(cards, '', 1, 1)
         util += batch_util
 
-        if i % (100000) == 0:
+        if i % 100000 < batch_size:
             if time.time() - t1 != 0.:
                 print(f"Kuhn trained {i} iterations. {str(100000 / (time.time() - t1))} iterations per second")
             my = Test()
@@ -49,9 +49,13 @@ def train(iterations: int, saveName):
 
     my = Test()
     my.nodeMap = nodeMap
-    print("Strategy: ")
-    for node in nodeMap.values():
-        print(node)
+    print("Strategy Details:")
+    for infoSet, node in nodeMap.items():
+        print(f"Information Set: {infoSet}")
+        print(f"Node Details: {node}")
+        print(f"Regret Sum: {node.regretSum}")
+        print(f"Strategy: {node.getStrategy(1)}")
+        print("-" * 30)
     print("Average game value: " + str(my.gameValue()))
 
     with open(saveName, 'wb') as f:
@@ -168,5 +172,5 @@ def cfrPrune(cards: np.ndarray, history: str, p0: float, p1: float) -> float:
 
 if __name__ == '__main__':
     start_time = time.time()
-    train(10 ** 6, "kt-10")
+    train(10 ** 6, "kt-10M")
     print("--- %s seconds ---" % (time.time() - start_time))

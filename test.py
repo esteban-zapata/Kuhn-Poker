@@ -1,7 +1,7 @@
 import pickle
 import random
 from nodes import kNode
-
+from anytree import Node, RenderTree
 
 class Test():
     nodeMap: dict
@@ -174,6 +174,18 @@ def treeBuilder():
             nodeMap[IS] = {'ev': 0}
     return nodeMap
 
+def printTree(tree: dict):
+    root = Node("root")
+    nodes = {"root": root}
+    for item in tree:
+        parent = nodes["root"]
+        for i in range(len(item)):
+            key = item[:i+1]
+            if key not in nodes:
+                nodes[key] = Node(key, parent=parent)
+            parent = nodes[key]
+    for pre, fill, node in RenderTree(root):
+        print("%s%s" % (pre, node.name))
 
 def buildAvgStrat():
     nodeMap = {}
@@ -195,7 +207,9 @@ if __name__ == '__main__':
     game = Test()
     nodeMap = buildAvgStrat()
     game.nodeMap = nodeMap
+    # printTree(game.nodeMap)
     exp = game.bestResponse()
-    print(game.gameValue())
+    printTree(exp)
+    print(f'game value: {game.gameValue()}')
     print(game.exploitability())
     print(game.bestResponse())

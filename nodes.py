@@ -6,13 +6,13 @@ BET = 1
 NUM_ACTIONS = 2
 rand = random.random()
 
-
 class kNode():
     def __init__(self):
         self.children = ''
         self.strategy = [0] * NUM_ACTIONS
         self.regretSum = [0] * NUM_ACTIONS
         self.strategySum = [0] * NUM_ACTIONS
+        self.promising_branches = list(range(NUM_ACTIONS))  # Initialize promising_branches
 
     def __str__(self):
         return self.children + '' + ', '.join(str(x) for x in self.getAvgStrat())
@@ -72,3 +72,4 @@ class kNode():
                     return 2
                 else:
                     return -2
+        return None

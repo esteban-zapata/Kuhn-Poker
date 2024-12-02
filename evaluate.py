@@ -57,7 +57,7 @@ def calculate_exploitability(nodeMap):
 
 if __name__ == '__main__':
     # Load the trained strategy
-    nodeMap = load_strategy("kt-100M")
+    nodeMap = load_strategy("kt-64M")
 
     # Simulate games to calculate win rate and average reward
     num_games = 10000

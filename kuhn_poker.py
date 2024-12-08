@@ -1,7 +1,6 @@
 from typing import Dict
 import pickle
 import random
-# from nodes import kNode
 
 
 class KuhnPoker():
@@ -16,7 +15,6 @@ class KuhnPoker():
         random.shuffle(cards)
         print("you have: $" + str(bank))
         print("====================================\n")
-        # print("Your card is: " + str(cards[0]) if first else str(cards[1]))
         if first: print("Your card is: " + str(cards[0]))
         else: print("Your card is: " + str(cards[1]))
         self.playAI(first, bank + self.recursive(cards, '', first))

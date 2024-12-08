@@ -202,14 +202,16 @@ def buildAvgStrat():
             nodeMap[infoSet] = currentNode
     return nodeMap
 
-
 if __name__ == '__main__':
     game = Test()
     nodeMap = buildAvgStrat()
     game.nodeMap = nodeMap
-    # printTree(game.nodeMap)
+    printTree(game.nodeMap)
     exp = game.bestResponse()
     printTree(exp)
+    for i in exp:
+        print(f'{i}: {exp[i]}')
+    print(f'best response: {exp}')
     print(f'game value: {game.gameValue()}')
     print(game.exploitability())
     print(game.bestResponse())

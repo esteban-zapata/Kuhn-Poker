@@ -55,6 +55,8 @@ def calculate_exploitability(nodeMap):
                 exploitability += strategy[a] * abs(strategy[a] - 0.5)
     return exploitability
 
+
+
 if __name__ == '__main__':
     # Load the trained strategy
     nodeMap = load_strategy("kt-64M")

@@ -2,8 +2,6 @@ import random, pickle, time
 from typing import *
 from nodes import kNode
 from test import Test
-# import sys
-# sys.setrecursionlimit(500000)
 
 NUM_ACTIONS = 2
 
@@ -192,6 +190,5 @@ def cfrPrune(cards: List[int], history: str, p0: float, p1: float) -> float:
 if __name__ == '__main__':
     import time
     start_time = time.time()
-    # train(10 ** 6, "kt-10")
     continueTrainPrune('kt-10M', 10**7, 'kt-64M')
     print("--- %s seconds ---" % (time.time() - start_time))

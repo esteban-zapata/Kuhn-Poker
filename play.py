@@ -1,3 +1,5 @@
+# ML Project
+# Esteban Zapata & Raxel Ortiz
 import time
 from kuhn_poker import KuhnPoker
 from kuhn_train import continueTrainPrune, train, continueTrain

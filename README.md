@@ -34,5 +34,9 @@ python kuhn_train.py
 ## See the Metrics:
 Run the metrics script by executing the following command in the terminal:
 ```python
-python test.py evaluate.py
+python test.py
+```
+or
+```python
+python evaluate.py
 ```
